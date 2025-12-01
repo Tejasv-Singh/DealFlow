@@ -76,6 +76,7 @@ export default function Home() {
             value={newCompany}
             onChange={(e) => setNewCompany(e.target.value)}
             className="bg-gray-800 border border-gray-700 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
+            suppressHydrationWarning
           />
           <input
             type="text"
@@ -83,11 +84,25 @@ export default function Home() {
             value={newWebsite}
             onChange={(e) => setNewWebsite(e.target.value)}
             className="bg-gray-800 border border-gray-700 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
+            suppressHydrationWarning
           />
           <button type="submit" className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-sm font-medium transition-colors">
             Add Target
           </button>
         </form>
+        <div className="flex items-center gap-2 ml-4">
+          <label className="bg-gray-800 hover:bg-gray-700 px-3 py-2 rounded text-sm cursor-pointer border border-gray-700 transition-colors">
+            <span>Upload CSV</span>
+            <input type="file" accept=".csv" className="hidden" onChange={async (e) => {
+              if (e.target.files?.[0]) {
+                const formData = new FormData();
+                formData.append('file', e.target.files[0]);
+                await fetch('/api/upload', { method: 'POST', body: formData });
+                fetchData();
+              }
+            }} />
+          </label>
+        </div>
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8 overflow-x-auto pb-4">

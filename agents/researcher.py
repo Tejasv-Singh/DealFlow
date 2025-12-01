@@ -33,9 +33,35 @@ class ResearchAgent:
         
         # Prompt with real data
         context = f"Website Content: {scraped_text}" if scraped_text else "Website could not be scraped."
-        prompt = f"Research the company {company_name} at {website}. {context} Find recent news, tech stack, and key people."
+        prompt = f"""
+        Research the company {company_name} at {website}. 
+        {context}
         
-        research_content = get_llm_response(prompt, system_prompt="You are a senior tech researcher.")
+        Goal: Find a Point of Contact (POC) for sponsorship or partnership.
+        Look for:
+        1. Marketing/DevRel Lead Name
+        2. Contact Email (prioritize specific people, fallback to generic)
+        3. Recent News/Context
+        
+        Output format:
+        POC Name: [Name]
+        POC Email: [Email]
+        Context: [Summary]
+        """
+        
+        research_content = get_llm_response(prompt, system_prompt="You are a senior tech researcher. Your goal is to find contact info.")
+        
+        # Try to extract email from research content to update DB
+        import re
+        email_match = re.search(r'[\w.+-]+@[\w-]+\.[\w.-]+', research_content)
+        if email_match:
+            email = email_match.group(0)
+            print(f"Found potential email: {email}")
+            # Update sponsor email in DB
+            conn = self.db._get_conn()
+            conn.execute("UPDATE sponsors SET contact_email = ? WHERE id = ?", (email, sponsor_id))
+            conn.commit()
+            conn.close()
         
         # Save artifact
         self.db.add_research_artifact(sponsor_id, research_content)
