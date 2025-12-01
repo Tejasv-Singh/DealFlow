@@ -1,96 +1,187 @@
-# DealFlow - Autonomous Sponsorship Swarm
+# DealFlow - Autonomous Sponsorship Swarm 🚀
 
-DealFlow is a fully autonomous, multi-agent sponsorship outreach system. It orchestrates a team of AI agents to research, contact, and schedule meetings with potential sponsors, managed via a Kanban UI.
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Python](https://img.shields.io/badge/python-3.10+-blue.svg)
+![Next.js](https://img.shields.io/badge/next.js-15+-black.svg)
 
-## Architecture
+**DealFlow** is a fully autonomous, multi-agent system designed to streamline the sponsorship outreach process. It orchestrates a swarm of AI agents to research potential sponsors, craft personalized outreach emails, negotiate terms, and schedule meetings—all managed through a real-time Kanban interface.
+
+---
+
+## 🏗️ System Architecture
+
+DealFlow uses a **Hub-and-Spoke** architecture where a central Campaign Manager orchestrates specialized agents.
 
 ```mermaid
 graph TD
-    UI[Next.js Kanban UI] <--> API[Next.js API]
-    API <--> DB[(SQLite Database)]
+    User[User / Kanban UI] <-->|API| DB[(SQLite Database)]
     
-    subgraph "Agent Swarm (Python)"
-        CM[Campaign Manager] -->|Orchestrates| RA[Research Agent]
-        CM -->|Orchestrates| CA[Copywriter Agent]
-        CM -->|Orchestrates| AA[Ambient Agent]
+    subgraph "Orchestration Layer"
+        CM[Campaign Manager] -->|Delegates| RA[Research Agent]
+        CM -->|Delegates| CA[Copywriter Agent]
+        CM -->|Delegates| AA[Ambient Agent]
+    end
+
+    subgraph "Execution Layer"
+        RA -->|Scrapes & Analyzes| Web[Company Websites]
+        CA -->|Drafts Emails| LLM[LLM (OpenAI/Gemini)]
+        AA -->|Monitors| Gmail[Gmail MCP]
         AA -->|Triggers| SA[Scheduler Agent]
-        
-        RA -->|Reads/Writes| DB
-        CA -->|Reads/Writes| DB
-        SA -->|Reads/Writes| DB
-        AA -->|Reads/Writes| DB
+        SA -->|Manages| Cal[Calendar MCP]
     end
     
-    subgraph "MCP Tools"
-        Gmail[Gmail MCP]
-        Cal[Calendar MCP]
-    end
+    RA -->|Writes Artifacts| DB
+    CA -->|Logs Drafts| DB
+    AA -->|Updates Status| DB
+    SA -->|Bookings| DB
+```
+
+### 🤖 The Agent Swarm
+
+1.  **Campaign Manager (The Boss)** 🎩
+    *   **Role**: Orchestrator.
+    *   **Function**: Monitors the pipeline, assigns tasks to worker agents, and ensures leads move from "Identified" to "Won".
     
-    AA -->|Monitors| Gmail
-    CA -->|Sends via| Gmail
-    SA -->|Manages| Cal
-```
+2.  **Research Agent (The Analyst)** 🕵️
+    *   **Role**: Intelligence gathering.
+    *   **Function**: Visits sponsor websites, scrapes content, and uses LLMs to extract key info (recent news, tech stack, key decision makers).
+    *   **Output**: A structured "Research Artifact" stored in the DB.
 
-## Agents & Goals
+3.  **Copywriter Agent (The Creative)** ✍️
+    *   **Role**: Content generation.
+    *   **Function**: Reads the Research Artifact and crafts a highly personalized, warm, and professional outreach email.
+    
+4.  **Ambient Agent (The Watchdog)** 🐕
+    *   **Role**: Monitoring & Reaction.
+    *   **Function**: Continuously watches the inbox for replies. It classifies sentiment (Positive, Negative, Later) and triggers the next step.
+    
+5.  **Scheduler Agent (The Closer)** 📅
+    *   **Role**: Logistics.
+    *   **Function**: When a positive reply is detected, it interacts with the Google Calendar MCP to find free slots and book the meeting.
 
-1.  **Campaign Manager**: Primary orchestrator. Assigns tasks, manages pipeline state.
-2.  **Research Agent**: Scrapes web/news for company info. Produces "Research Artifacts".
-3.  **Copywriter Agent**: Generates personalized outreach emails based on research.
-4.  **Ambient Agent**: Monitors inbox for replies. Detects intent (Yes/No/Later).
-5.  **Scheduler Agent**: Negotiates times and books meetings via Google Calendar.
+---
 
-## MCP Tools
+## 🛠️ Tech Stack
 
--   **Gmail MCP**: `send_email`, `read_inbox`, `monitor_thread`.
--   **Calendar MCP**: `get_free_slots`, `create_event`, `propose_slots`.
+*   **Backend**: Python 3.10+
+    *   **AI/LLM**: OpenAI GPT-4o, Google Gemini 1.5 Flash
+    *   **Scraping**: BeautifulSoup4, Requests
+    *   **Database**: SQLite (via `better-sqlite3` in Node, `sqlite3` in Python)
+    *   **Tooling**: Custom MCP (Model Context Protocol) implementations for Gmail & Calendar
+*   **Frontend**: Next.js 15 (App Router)
+    *   **Styling**: Tailwind CSS
+    *   **Language**: TypeScript
+    *   **State**: React Hooks + Polling
 
-## Database Schema
+---
 
--   `sponsors`: Company info and status (Identified, Researching, Contacted, Negotiating, Won).
--   `research_artifacts`: Stored research data.
--   `email_threads`: History of communication.
--   `meeting_slots`: Proposed and confirmed slots.
--   `long_term_memory`: Snoozed leads (e.g., "Contact in Q2").
--   `event_log`: System-wide audit trail.
+## 🚀 Getting Started
 
-## Folder Structure
+### Prerequisites
 
-```
-dealflow/
-├── agents/                 # Python Agent Implementations
-├── mcp/                    # MCP Tool Definitions
-├── db/                     # Database Manager & Schema
-├── orchestrator/           # Main Entry Point
-├── ui/                     # Next.js Frontend
-│   ├── app/                # App Router & API
-│   └── components/         # React Components
-└── requirements.txt        # Python Dependencies
-```
+*   Python 3.10 or higher
+*   Node.js 18 or higher
+*   (Optional) OpenAI API Key or Google Gemini API Key
 
-## Setup & Run
+### Installation
 
-1.  **Backend**:
+1.  **Clone the Repository**
     ```bash
-    # Install dependencies
-    pip install -r requirements.txt
-    
-    # Run Orchestrator
-    python3 -m dealflow.orchestrator.main
+    git clone https://github.com/Tejasv-Singh/DealFlow.git
+    cd DealFlow
     ```
 
-2.  **Frontend**:
+2.  **Backend Setup**
+    ```bash
+    # Create a virtual environment (recommended)
+    python3 -m venv venv
+    source venv/bin/activate
+    
+    # Install dependencies
+    pip install -r requirements.txt
+    ```
+
+3.  **Frontend Setup**
     ```bash
     cd ui
     npm install
-    npm run dev
     ```
-    Access at `http://localhost:3000`.
 
-## Workflow Logic
+### Configuration
 
-1.  **Identified**: User adds a sponsor via UI.
-2.  **Researching**: Campaign Manager hires Research Agent.
-3.  **Contacted**: Copywriter drafts email; sent via Gmail MCP.
-4.  **Negotiating**: Ambient Agent detects reply; triggers Scheduler.
-5.  **Won**: Meeting confirmed on Calendar.
+1.  Copy the example environment file:
+    ```bash
+    cp .env.example .env
+    ```
+2.  Edit `.env` and add your API keys:
+    ```env
+    # OpenAI (Recommended for best quality)
+    OPENAI_API_KEY=sk-...
+    
+    # OR Gemini (Good alternative)
+    GEMINI_API_KEY=AIza...
+    ```
+    *Note: If no keys are provided, the system runs in **Simulation Mode**, using mock data for demos.*
 
+---
+
+## 🏃‍♂️ Usage
+
+### 1. Start the Backend Orchestrator
+This starts the agent loop. It will seed test data if the database is empty.
+
+```bash
+# From the project root
+python3 -m dealflow.orchestrator.main
+```
+
+### 2. Start the Frontend UI
+Open a new terminal window.
+
+```bash
+cd ui
+npm run dev
+```
+
+### 3. Interact
+*   Open your browser to `http://localhost:3000`.
+*   **Add a Target**: Enter a company name and website (e.g., "Stripe", "stripe.com") in the top bar.
+*   **Watch it Work**:
+    *   The card appears in **Identified**.
+    *   Research Agent picks it up -> moves to **Researching**.
+    *   Copywriter drafts email -> moves to **Contacted**.
+    *   (Simulated) Reply received -> Ambient Agent moves to **Negotiating**.
+    *   Scheduler books meeting -> moves to **Won**.
+
+---
+
+## 📂 Project Structure
+
+```
+dealflow/
+├── agents/                 # 🧠 Brains of the operation
+│   ├── campaign_manager.py # Main loop
+│   ├── researcher.py       # Web scraping & analysis
+│   ├── copywriter.py       # Email generation
+│   ├── ambient.py          # Inbox monitoring
+│   └── scheduler.py        # Calendar management
+├── mcp/                    # 🛠️ Tools
+│   ├── gmail.py            # Gmail interface
+│   └── calendar.py         # Google Calendar interface
+├── db/                     # 💾 Memory
+│   ├── schema.sql          # Database structure
+│   └── db_manager.py       # Python DB interface
+├── orchestrator/           # 🎬 Entry point
+│   └── main.py
+└── ui/                     # 💻 Frontend
+    ├── app/                # Next.js App Router
+    └── components/         # React components
+```
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## 📄 License
+
+This project is licensed under the MIT License.
