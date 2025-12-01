@@ -24,7 +24,7 @@ graph TD
 
     subgraph "Execution Layer"
         RA -->|Scrapes & Analyzes| Web[Company Websites]
-        CA -->|Drafts Emails| LLM[LLM (OpenAI/Gemini)]
+        CA -->|Drafts Emails| LLM["LLM (OpenAI/Gemini)"]
         AA -->|Monitors| Gmail[Gmail MCP]
         AA -->|Triggers| SA[Scheduler Agent]
         SA -->|Manages| Cal[Calendar MCP]
