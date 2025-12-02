@@ -134,6 +134,10 @@ This starts the agent loop. It will seed test data if the database is empty.
 ```bash
 # From the project root
 python3 -m dealflow.orchestrator.main
+
+# OR run in A2A Mode (for Verisense Network)
+python3 -m dealflow.orchestrator.a2a_server
+
 ```
 
 ### 2. Start the Frontend UI
