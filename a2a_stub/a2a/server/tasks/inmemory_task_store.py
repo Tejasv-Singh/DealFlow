@@ -1,0 +1,2 @@
+class InMemoryTaskStore:
+    pass
