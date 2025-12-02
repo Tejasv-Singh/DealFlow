@@ -68,6 +68,7 @@ graph TD
     *   **Scraping**: BeautifulSoup4, Requests
     *   **Database**: SQLite (via `better-sqlite3` in Node, `sqlite3` in Python)
     *   **Tooling**: Custom MCP (Model Context Protocol) implementations for Gmail & Calendar
+    *   **Verisense**: Rust-based Nucleus for decentralized logic
 *   **Frontend**: Next.js 15 (App Router)
     *   **Styling**: Tailwind CSS
     *   **Language**: TypeScript
@@ -168,6 +169,7 @@ dealflow/
 ├── mcp/                    # 🛠️ Tools
 │   ├── gmail.py            # Gmail interface
 │   └── calendar.py         # Google Calendar interface
+├── verisense_agent/        # 🦀 Verisense Nucleus (Rust)
 ├── db/                     # 💾 Memory
 │   ├── schema.sql          # Database structure
 │   └── db_manager.py       # Python DB interface
